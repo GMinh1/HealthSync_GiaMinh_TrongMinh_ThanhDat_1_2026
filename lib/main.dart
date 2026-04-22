@@ -1,64 +1,26 @@
-import 'package:flutter/material.dart';
+import 'health_record.dart';
+import 'list_health_record.dart';
 
 void main() {
-  runApp(const MyApp());
-}
+  ListHealthRecord list = ListHealthRecord();
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'HealthSync',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
-      home: const MyHomePage(title: 'HealthSync APP (app quan ly suc khoe)'),
-    );
-  }
-}
+  // CREATE
+  list.addRecord(HealthRecord("h1", "An", 20, 60, 1.7));
+  list.addRecord(HealthRecord("h2", "Binh", 22, 70, 1.75));
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+  // READ
+  print("Danh sach ban dau:");
+  list.getAllRecords();
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  // UPDATE
+  list.updateRecord("h1", "An Updated", 21, 62, 1.7);
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+  print("Sau khi cap nhat:");
+  list.getAllRecords();
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('SO LAN BAM NUT:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const Text('Trần Trọng Minh 23010563'),
-            const Text('Phùng Gia Minh 23010869'),
-            const Text('Đỗ Thành Đạt 23011627'),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
+  // DELETE
+  list.deleteRecord("h2");
+
+  print("Sau khi xoa:");
+  list.getAllRecords();
 }
