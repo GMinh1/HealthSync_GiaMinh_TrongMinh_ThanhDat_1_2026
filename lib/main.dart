@@ -1,26 +1,80 @@
-import 'health_record.dart';
-import 'list_health_record.dart';
+import 'package:flutter/material.dart';
+
+import 'widgets/screen_layout.dart';
+import 'screens/home_body.dart';
+import 'screens/content_body.dart';
+import 'screens/about_body.dart';
 
 void main() {
-  ListHealthRecord list = ListHealthRecord();
+  runApp(const MyApp());
+}
 
-  // CREATE
-  list.addRecord(HealthRecord("h1", "An", 20, 60, 1.7));
-  list.addRecord(HealthRecord("h2", "Binh", 22, 70, 1.75));
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-  // READ
-  print("Danh sach ban dau:");
-  list.getAllRecords();
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Health Tracker',
+      theme: ThemeData(
+        primarySwatch: Colors.teal, // Đổi sang màu xanh ngọc (phổ biến trong app y tế)
+        useMaterial3: true,
+      ),
+      home: const MainScreen(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
 
-  // UPDATE
-  list.updateRecord("h1", "An Updated", 21, 62, 1.7);
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
 
-  print("Sau khi cap nhat:");
-  list.getAllRecords();
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
 
-  // DELETE
-  list.deleteRecord("h2");
+class _MainScreenState extends State<MainScreen> {
+  int _currentIndex = 0;
 
-  print("Sau khi xoa:");
-  list.getAllRecords();
+  final List<Widget> _pages = [
+    const ScreenLayout(bodyContent: HomeBody()),
+    const ScreenLayout(bodyContent: ContentBody()),
+    const ScreenLayout(bodyContent: AboutBody()),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('HealthSync', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.teal,
+        foregroundColor: Colors.white,
+        centerTitle: true,
+      ),
+      body: _pages[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        selectedItemColor: Colors.teal,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite), // Icon trái tim
+            label: 'Tổng quan',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.monitor_heart), // Icon nhịp tim
+            label: 'Chỉ số',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.health_and_safety), // Icon hồ sơ y tế
+            label: 'Hồ sơ',
+          ),
+        ],
+      ),
+    );
+  }
 }
