@@ -63,15 +63,15 @@ class _MainScreenState extends State<MainScreen> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite), // Icon trái tim
-            label: 'Home',
+            label: 'Trang chủ',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.monitor_heart), // Icon nhịp tim
-            label: 'Content',
+            label: 'Chỉ số',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.health_and_safety), // Icon hồ sơ y tế
-            label: 'About',
+            label: 'Hồ sơ',
           ),
         ],
       ),
