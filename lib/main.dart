@@ -4,6 +4,7 @@ import 'widgets/screen_layout.dart';
 import 'screens/home_body2.dart';
 import 'screens/content_body.dart';
 import 'screens/about_body.dart';
+import 'screens/about_body2.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +18,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Health Tracker',
       theme: ThemeData(
-        primarySwatch: Colors.teal, // Đổi sang màu xanh ngọc (phổ biến trong app y tế)
+        primarySwatch:
+            Colors.teal, // Đổi sang màu xanh ngọc (phổ biến trong app y tế)
         useMaterial3: true,
       ),
       home: const MainScreen(),
@@ -39,14 +41,17 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _pages = [
     const ScreenLayout(bodyContent: HomeBody2()),
     const ScreenLayout(bodyContent: ContentBody()),
-    const ScreenLayout(bodyContent: AboutBody()),
+    const ScreenLayout(bodyContent: AboutBody2()),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('HealthSync', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'HealthSync',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -61,18 +66,12 @@ class _MainScreenState extends State<MainScreen> {
           });
         },
         items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite), // Icon trái tim
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.monitor_heart), // Icon nhịp tim
+            icon: Icon(Icons.monitor_heart),
             label: 'Stats',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.health_and_safety), // Icon hồ sơ y tế
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.info), label: 'About'),
         ],
       ),
     );
