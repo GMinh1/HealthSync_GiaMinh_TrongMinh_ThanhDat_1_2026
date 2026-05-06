@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'widgets/screen_layout.dart';
-import 'screens/home_body.dart';
+import 'screens/home_body2.dart';
 import 'screens/content_body.dart';
 import 'screens/about_body.dart';
 
@@ -37,7 +37,7 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    const ScreenLayout(bodyContent: HomeBody()),
+    const ScreenLayout(bodyContent: HomeBody2()),
     const ScreenLayout(bodyContent: ContentBody()),
     const ScreenLayout(bodyContent: AboutBody()),
   ];
@@ -63,15 +63,15 @@ class _MainScreenState extends State<MainScreen> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite), // Icon trái tim
-            label: 'Tổng quan',
+            label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.monitor_heart), // Icon nhịp tim
-            label: 'Chỉ số',
+            label: 'Content',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.health_and_safety), // Icon hồ sơ y tế
-            label: 'Hồ sơ',
+            label: 'About',
           ),
         ],
       ),
