@@ -25,4 +25,6 @@ HealthSync là ứng dụng theo dõi sức khỏe được phát triển bằng
 Yêu cầu bài kiểm tra giữa kì:
 - Home Screen (Trần Trọng Minh)
 - Content Screen (Đỗ Thành Đạt)
-- About Screen (Phùng Gia Minh)
+- About Screen (Phùng Gia Minh):
+  <img width="1919" height="904" alt="image" src="https://github.com/user-attachments/assets/13eb04e7-cff2-44a0-91b5-7269a09765d1" />
+
