@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+import 'widgets/screen_layout.dart';
+import 'screens/home_body.dart';
+import 'screens/content_body.dart';
+import 'screens/about_body.dart';
+import 'screens/home_giuaki.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -10,120 +16,70 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'HealthSync',
+      title: 'Health Tracker',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple), // FIX lỗi ở đây
+        primarySwatch: Colors.teal, // Đổi sang màu xanh ngọc (phổ biến trong app y tế)
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'HealthSync APP (app quan ly suc khoe)'),
+      home: const MainScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MainScreenState extends State<MainScreen> {
+  int _currentIndex = 0;
 
-  //  1. Biến (HealthSync)
-  int age = 20;
-  String name = "Tran Trong Minh";
-  bool isMale = true;
-
-  int heartRate = 72;
-  double weight = 65.5;
-
-  //  2. Collections
-  final List<String> activities = ["Running", "Walking", "Sleeping"];
-  final List<int> stepsList = [5000, 3000, 800];
-
-  final Map<String, dynamic> healthData = {
-    "Heart Rate": 72,
-    "Weight": 65.5,
-    "Steps": 5000,
-  };
+  final List<Widget> _pages = [
+    const ScreenLayout(bodyContent: HomeBody()),
+    const ScreenLayout(bodyContent: ContentBody()),
+    const ScreenLayout(bodyContent: AboutBody()),
+    const ScreenLayout(bodyContent: LoginBody()),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: const Text('HealthSync', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.teal,
+        foregroundColor: Colors.white,
+        centerTitle: true,
       ),
-
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-      Column(
-        children: [
-          TextButton.icon(
-            onPressed: () {},
-            icon: Icon(Icons.home),
-            label: Text("Home"),
+      body: _pages[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        selectedItemColor: Colors.teal,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite), // Icon trái tim
+            label: 'Tổng quan',
           ),
-          TextButton.icon(
-            onPressed: () {},
-            icon: Icon(Icons.favorite),
-            label: Text("Health"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.monitor_heart), // Icon nhịp tim
+            label: 'Chỉ số',
           ),
-          TextButton.icon(
-            onPressed: () {},
-            icon: Icon(Icons.person),
-            label: Text("Profile"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.health_and_safety), // Icon hồ sơ y tế
+            label: 'Hồ sơ',
           ),
-        ],
-      ),
-
-      const SizedBox(height: 20),
-
-            // Counter
-          
-            const SizedBox(height: 20),
-
-            //  Hiển thị biến
-            Text("Name: $name"),
-            Text("Age: $age"),
-            Text("Heart Rate: $heartRate"),
-
-            const SizedBox(height: 20),
-
-            //  Hiển thị List (Row + for)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text("Activities: "),
-                for (var item in activities) Text("$item "),
-              ],
-            ),
-
-            //  Hiển thị List (map)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text("Steps: "),
-                ...stepsList.map((s) => Text("$s ")),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            //  Hiển thị Map
-            Column(
-              children: healthData.entries
-                  .map((e) => Text("${e.key}: ${e.value}"))
-                  .toList(),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Tên nhóm
-          ],
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_add),
+            label: 'Đăng ký',
         ),
+        ],
       ),
     );
   }

@@ -1,17 +1,23 @@
-# flutter_application
+# HealthSync App
 
-A new Flutter project.
+## Giới thiệu
 
-## Getting Started
+HealthSync là ứng dụng theo dõi sức khỏe được phát triển bằng Flutter. Ứng dụng giúp người dùng quản lý cân nặng, số bước chân và lượng calo tiêu thụ hàng ngày.
 
-This project is a starting point for a Flutter application.
+## Chức năng
 
-A few resources to get you started if this is your first Flutter project:
+* Quản lý dữ liệu sức khỏe
+* Tính BMI
+* Theo dõi lịch sử
+* CRUD dữ liệu
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Công nghệ sử dụng
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+* Flutter
+* Dart
+
+## Thành viên
+
+* Trần Trọng Minh (21012741)
+* Phùng Gia Minh (23010869)
+* Đỗ Thành Đạt (23011627)
