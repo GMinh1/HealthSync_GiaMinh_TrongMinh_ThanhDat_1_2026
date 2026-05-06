@@ -6,122 +6,123 @@ class HomeBody2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // APP ICON
-          const CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.green,
-            child: Icon(Icons.health_and_safety,
-                size: 50, color: Colors.white),
+          const SizedBox(height: 40),
+
+          // HERO TEXT (giống web)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: RichText(
+              textAlign: TextAlign.center,
+              text: const TextSpan(
+                style: TextStyle(
+                  fontSize: 28,
+                  color: Colors.black,
+                  height: 1.4,
+                ),
+                children: [
+                  TextSpan(text: "We "),
+                  TextSpan(
+                    text: "track, analyze,",
+                    style: TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                  TextSpan(
+                    text:
+                        " and improve your health\nthrough smart monitoring.",
+                  ),
+                ],
+              ),
+            ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
-          // APP NAME
-          const Text(
-            "Sync Health",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          // BUTTON
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green[700],
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 14,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            onPressed: () {},
+            child: const Text("Start Tracking"),
           ),
 
-          const SizedBox(height: 6),
+          const SizedBox(height: 40),
 
-          // SHORT DESCRIPTION
-          const Text(
-            "Track your health. Improve your life.",
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-            textAlign: TextAlign.center,
+          // IMAGE SECTION (2 ảnh ngang)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildImage(
+                    "https://images.unsplash.com/photo-1576091160550-2173dba999ef",
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildImage(
+                    "https://images.unsplash.com/photo-1510017803434-a899398421b3",
+                  ),
+                ),
+              ],
+            ),
           ),
 
-          const SizedBox(height: 24),
-          const Divider(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 40),
 
-          // FEATURE LIST (EXPANDABLE)
-          _buildItem(
-            Icons.favorite,
-            "Heart Rate Monitoring",
-            "Track your heart rate in real-time to understand your cardiovascular health. "
-                "Receive alerts when your heart rate is too high or too low.",
+          // TEXT CONTENT (giống WHAT WE BELIEVE)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  "WHAT WE TRACK",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                    color: Colors.grey,
+                  ),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "We believe in better health through data. We track metrics like:\n\n"
+                  "Heart Rate. Steps. Sleep. Calories. Blood Oxygen. "
+                  "Activity Levels. Hydration.\n\n"
+                  "Why does it matter?\n\n"
+                  "Tracking your health helps you understand your body better. "
+                  "With real-time insights, you can improve your habits, stay active, "
+                  "and maintain a healthier lifestyle.",
+                  style: TextStyle(fontSize: 14, height: 1.6),
+                ),
+              ],
+            ),
           ),
 
-          _buildItem(
-            Icons.directions_walk,
-            "Daily Step Tracking",
-            "Monitor your daily steps to stay active. Set goals and track your progress "
-                "towards a healthier lifestyle.",
-          ),
-
-          _buildItem(
-            Icons.bed,
-            "Sleep Analysis",
-            "Analyze your sleep patterns including deep sleep, light sleep, and awake time "
-                "to improve your sleep quality.",
-          ),
-
-          _buildItem(
-            Icons.local_fire_department,
-            "Calories Tracking",
-            "Track calories burned throughout the day based on your activities and "
-                "exercise routines.",
-          ),
-
-          _buildItem(
-            Icons.water_drop,
-            "Blood Oxygen Monitoring",
-            "Measure your blood oxygen (SpO2) levels to ensure your body is getting enough oxygen.",
-          ),
-
-          const SizedBox(height: 24),
-
-          // ABOUT TEXT
-          const Text(
-            "Sync Health is a smart health tracking application designed to help you "
-            "monitor your daily activities and vital health metrics. By syncing data "
-            "from your devices, the app provides insights to improve your lifestyle "
-            "and overall well-being.",
-            style: TextStyle(fontSize: 14, height: 1.6),
-            textAlign: TextAlign.center,
-          ),
-
-          const SizedBox(height: 30),
+          const SizedBox(height: 40),
         ],
       ),
     );
   }
 
-  // EXPANDABLE ITEM
-  Widget _buildItem(
-    IconData icon,
-    String title,
-    String description,
-  ) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      elevation: 2,
-      child: ExpansionTile(
-        leading: Icon(icon, color: Colors.green[700]),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+  Widget _buildImage(String url) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: AspectRatio(
+        aspectRatio: 3 / 4,
+        child: Image.network(
+          url,
+          fit: BoxFit.cover,
         ),
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Text(
-              description,
-              style: const TextStyle(fontSize: 14, height: 1.5),
-            ),
-          ),
-        ],
       ),
     );
   }
