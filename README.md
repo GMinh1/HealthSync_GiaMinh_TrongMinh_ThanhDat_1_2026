@@ -18,6 +18,11 @@ HealthSync là ứng dụng theo dõi sức khỏe được phát triển bằng
 
 ## Thành viên
 
-* Trần Trọng Minh (21012741)
+* Trần Trọng Minh (23010563)
 * Phùng Gia Minh (23010869)
 * Đỗ Thành Đạt (23011627)
+
+Yêu cầu bài kiểm tra giữa kì:
+- Home Screen (Trần Trọng Minh)
+- Content Screen (Đỗ Thành Đạt)
+- About Screen (Phùng Gia Minh)
