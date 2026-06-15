@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'core/app_theme.dart';
 import 'pages/care_page.dart';
-import 'pages/sound_page.dart';
+import 'pages/workout_page.dart';
 import 'pages/recipe_page.dart';
 import 'pages/user_page.dart';
 import 'pages/add_menu_page.dart';
@@ -12,7 +12,7 @@ import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
+
   runApp(const HealthSyncApp());
 }
 
@@ -23,13 +23,14 @@ class HealthSyncApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: kGreen), useMaterial3: true),
-      home: const MainScreen(), // Trỏ thẳng vào app chính
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: kGreen),
+        useMaterial3: true,
+      ),
+      home: const MainScreen(),
     );
   }
 }
-
-// MainScreen giữ nguyên như code trước bạn đã có...
 
 // ─────────────────────────── Main Screen ────────────────────────────────
 class MainScreen extends StatefulWidget {
@@ -44,7 +45,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _pages = const [
     CarePage(key: ValueKey('care')),
-    SoundPage(key: ValueKey('sound')),
+    WorkoutPage(key: ValueKey('workout')),
     RecipePage(key: ValueKey('recipe')),
     UserPage(key: ValueKey('user')),
   ];
@@ -108,9 +109,23 @@ class _BottomNav extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _NavBtn(index: 0, current: currentIndex, onTap: onTap, icon: Icons.monitor_heart_outlined, activeIcon: Icons.monitor_heart, label: 'Care'),
-          _NavBtn(index: 1, current: currentIndex, onTap: onTap, icon: Icons.headphones_outlined, activeIcon: Icons.headphones, label: 'Sound'),
-          
+          _NavBtn(
+            index: 0,
+            current: currentIndex,
+            onTap: onTap,
+            icon: Icons.monitor_heart_outlined,
+            activeIcon: Icons.monitor_heart,
+            label: 'Care',
+          ),
+          _NavBtn(
+            index: 1,
+            current: currentIndex,
+            onTap: onTap,
+            icon: Icons.fitness_center_outlined,
+            activeIcon: Icons.fitness_center,
+            label: 'Workout',
+          ),
+
           GestureDetector(
             onTap: onFabTap,
             child: Container(
@@ -130,9 +145,23 @@ class _BottomNav extends StatelessWidget {
               child: const Icon(Icons.add, color: Colors.white, size: 30),
             ),
           ),
-          
-          _NavBtn(index: 2, current: currentIndex, onTap: onTap, icon: Icons.restaurant_menu_outlined, activeIcon: Icons.restaurant_menu, label: 'Recipe'),
-          _NavBtn(index: 3, current: currentIndex, onTap: onTap, icon: Icons.person_outline, activeIcon: Icons.person, label: 'Mine'),
+
+          _NavBtn(
+            index: 2,
+            current: currentIndex,
+            onTap: onTap,
+            icon: Icons.restaurant_menu_outlined,
+            activeIcon: Icons.restaurant_menu,
+            label: 'Recipe',
+          ),
+          _NavBtn(
+            index: 3,
+            current: currentIndex,
+            onTap: onTap,
+            icon: Icons.person_outline,
+            activeIcon: Icons.person,
+            label: 'Mine',
+          ),
         ],
       ),
     );
@@ -146,8 +175,12 @@ class _NavBtn extends StatelessWidget {
   final String label;
 
   const _NavBtn({
-    required this.index, required this.current, required this.onTap,
-    required this.icon, required this.activeIcon, required this.label,
+    required this.index,
+    required this.current,
+    required this.onTap,
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
   });
 
   @override
@@ -161,9 +194,20 @@ class _NavBtn extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(sel ? activeIcon : icon, color: sel ? kGreen : const Color(0xFFB5BEC6), size: 24),
+            Icon(
+              sel ? activeIcon : icon,
+              color: sel ? kGreen : const Color(0xFFB5BEC6),
+              size: 24,
+            ),
             const SizedBox(height: 2),
-            Text(label, style: TextStyle(fontSize: 11, color: sel ? kGreen : const Color(0xFFB5BEC6), fontWeight: sel ? FontWeight.w700 : FontWeight.w400)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: sel ? kGreen : const Color(0xFFB5BEC6),
+                fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
+              ),
+            ),
           ],
         ),
       ),
