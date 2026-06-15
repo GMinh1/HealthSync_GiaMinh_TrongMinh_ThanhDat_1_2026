@@ -37,7 +37,6 @@ class AddMenuPage extends StatelessWidget {
             title: 'Huyết áp',
             icon: Icons.monitor_heart,
             color: const Color(0xFF5B8DEF),
-            // Dùng pushReplacement để khi ấn "Back" ở trang Huyết áp, nó sẽ về thẳng trang chủ chứ không về lại menu này
             onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const BloodPressurePage())),
           ),
           _MenuCard(
@@ -69,6 +68,12 @@ class AddMenuPage extends StatelessWidget {
             icon: Icons.fitness_center,
             color: kGreen,
             onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const FitnessPage())),
+          ),
+          _MenuCard(
+            title: 'Bước chân',
+            icon: Icons.directions_walk,
+            color: const Color.fromARGB(255, 55, 64, 239),
+            onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const StepsPage())),
           ),
         ],
       ),
