@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import '../core/app_theme.dart';
 import 'add_record_page.dart';
 
-
 class BpRecord {
   final int systolic, diastolic, pulse;
   final DateTime dateTime;
@@ -32,7 +31,6 @@ class BpRecord {
     dateTime: dateTime ?? this.dateTime,
   );
 }
-
 
 class BloodPressurePage extends StatefulWidget {
   const BloodPressurePage({super.key});
@@ -210,7 +208,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
         ),
         const SizedBox(width: 4),
         const Text(
-          'Blood Pressure',
+          'Huyết áp',
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -268,7 +266,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
       child: Column(
         children: [
           const Text(
-            'Latest Blood Pressure',
+            'Chỉ số huyết áp gần đây nhất',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -363,7 +361,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
                 Icon(Icons.add, color: kGreen, size: 20),
                 SizedBox(width: 6),
                 Text(
-                  'Add Record',
+                  'Thêm chỉ số',
                   style: TextStyle(
                     color: kGreen,
                     fontSize: 16,

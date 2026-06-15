@@ -21,46 +21,46 @@ BpCategoryInfo getBpCategory(int sys, int dia) {
   if (sys >= 180 || dia >= 120) {
     return const BpCategoryInfo(
       label: 'Crisis',
-      range: 'SYS ≥180 or DIA ≥120',
+      range: 'SYS ≥180 hoặc DIA ≥120',
       color: Color(0xFFE53935),
       index: 5,
     );
   }
   if (sys >= 140 || dia >= 90) {
     return const BpCategoryInfo(
-      label: 'High Stage 2',
-      range: 'SYS 140-179 or DIA 90-119',
+      label: 'Tăng huyết áp độ 2',
+      range: 'SYS 140-179 hoặc DIA 90-119',
       color: Color(0xFFEF6C00),
       index: 4,
     );
   }
   if (sys >= 130 || dia >= 80) {
     return const BpCategoryInfo(
-      label: 'High Stage 1',
-      range: 'SYS 130-139 or DIA 80-89',
+      label: 'Tăng huyết áp độ 1',
+      range: 'SYS 130-139 hoặc DIA 80-89',
       color: Color(0xFFFF9800),
       index: 3,
     );
   }
   if (sys >= 120 && dia < 80) {
     return const BpCategoryInfo(
-      label: 'Elevated',
-      range: 'SYS 120-129 and DIA <80',
+      label: 'Cao',
+      range: 'SYS 120-129 và DIA <80',
       color: Color(0xFFFFCC02),
       index: 2,
     );
   }
   if (sys >= 90 && dia >= 60) {
     return const BpCategoryInfo(
-      label: 'Normal',
-      range: 'SYS 90-119 and DIA 60-79',
+      label: 'Bình thường',
+      range: 'SYS 90-119 và DIA 60-79',
       color: Color(0xFF2DCB73),
       index: 1,
     );
   }
   return const BpCategoryInfo(
-    label: 'Low',
-    range: 'SYS <90 or DIA <60',
+    label: 'Thấp',
+    range: 'SYS <90 hoặc DIA <60',
     color: Color(0xFF1E88E5),
     index: 0,
   );
@@ -332,7 +332,7 @@ class _AddRecordPageState extends State<AddRecordPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Date & Time',
+          'Ngày & giờ',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,

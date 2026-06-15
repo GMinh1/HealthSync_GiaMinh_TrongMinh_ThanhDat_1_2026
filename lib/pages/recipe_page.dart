@@ -410,11 +410,11 @@ class _RecipePageState extends State<RecipePage> {
   int _cat = 0;
 
   static const _cats = [
-    ('🔥 Hot',      RecipeCategory.hot),
-    ('🌿 Low-cal',  RecipeCategory.lowCal),
-    ('🎂 Cake',     RecipeCategory.kids),
-    ('🥄 Soup',     RecipeCategory.soup),
-    ('🍛 Curry',    RecipeCategory.curry),
+    ('🔥 Hot', RecipeCategory.hot),
+    ('🌿 Low-cal', RecipeCategory.lowCal),
+    ('🎂 Cake', RecipeCategory.kids),
+    ('🥄 Soup', RecipeCategory.soup),
+    ('🍛 Curry', RecipeCategory.curry),
   ];
 
   List<_RecipeData> get _filtered =>
@@ -454,11 +454,11 @@ class _RecipePageState extends State<RecipePage> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    "It's Tuesday, May 26th.",
+                    "Ăn uống điều độ, tốt cho sức khỏe!",
                     style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                   const Text(
-                    "Can't decide what to eat?",
+                    "Không biết nên ăn gì?",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -477,7 +477,7 @@ class _RecipePageState extends State<RecipePage> {
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Text(
-                'Recipes',
+                'Các công thức nấu ăn',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -535,8 +535,7 @@ class _RecipePageState extends State<RecipePage> {
               child: GridView.builder(
                 key: ValueKey(_cat), // reset scroll khi đổi category
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
@@ -596,7 +595,7 @@ class _FavoriteCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'favorite',
+                  'Yêu thích',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -605,7 +604,7 @@ class _FavoriteCard extends StatelessWidget {
                 ),
                 SizedBox(height: 2),
                 Text(
-                  'Your saved recipes',
+                  'Lưu công thức của bạn',
                   style: TextStyle(fontSize: 12, color: kSubText),
                 ),
               ],

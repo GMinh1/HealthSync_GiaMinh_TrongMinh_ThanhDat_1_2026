@@ -36,13 +36,18 @@ class CarePage extends StatelessWidget {
                           child: GestureDetector(
                             onTap: () => Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const HeartRatePage()),
+                              MaterialPageRoute(
+                                builder: (_) => const HeartRatePage(),
+                              ),
                             ),
                             child: const _LargeMetricCard(
                               title: 'Nhịp tim',
                               value: '78',
                               unit: 'BPM',
-                              bgGradient: [Color(0xFFFFD6D6), Color(0xFFFFBEBE)],
+                              bgGradient: [
+                                Color(0xFFFFD6D6),
+                                Color(0xFFFFBEBE),
+                              ],
                               accentColor: Color(0xFFE53935),
                               icon: Icons.favorite,
                             ),
@@ -53,13 +58,18 @@ class CarePage extends StatelessWidget {
                           child: GestureDetector(
                             onTap: () => Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const StepsPage()),
+                              MaterialPageRoute(
+                                builder: (_) => const StepsPage(),
+                              ),
                             ),
                             child: const _LargeMetricCard(
                               title: 'Bước chân',
                               value: '6540',
                               unit: '',
-                              bgGradient: [Color(0xFFD0F8E8), Color(0xFFB8F0D8)],
+                              bgGradient: [
+                                Color(0xFFD0F8E8),
+                                Color(0xFFB8F0D8),
+                              ],
                               accentColor: kGreen,
                               icon: Icons.directions_walk,
                             ),
@@ -74,10 +84,12 @@ class CarePage extends StatelessWidget {
                       GestureDetector(
                         onTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const BloodPressurePage()),
+                          MaterialPageRoute(
+                            builder: (_) => const BloodPressurePage(),
+                          ),
                         ),
                         child: const _SmallMetricCard(
-                          title: 'Blood Pressure',
+                          title: 'Huyết áp',
                           value: '110/70',
                           unit: 'mmHg',
                           bgColor: Color(0xFFECF3FF),
@@ -88,7 +100,9 @@ class CarePage extends StatelessWidget {
                       GestureDetector(
                         onTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const WeightBmiPage()),
+                          MaterialPageRoute(
+                            builder: (_) => const WeightBmiPage(),
+                          ),
                         ),
                         child: const _SmallMetricCard(
                           title: 'BMI',
@@ -107,7 +121,9 @@ class CarePage extends StatelessWidget {
                       GestureDetector(
                         onTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const BloodSugarPage()),
+                          MaterialPageRoute(
+                            builder: (_) => const BloodSugarPage(),
+                          ),
                         ),
                         child: const _SmallMetricCard(
                           title: 'Đường huyết',
@@ -121,7 +137,9 @@ class CarePage extends StatelessWidget {
                       GestureDetector(
                         onTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const WaterIntakePage()),
+                          MaterialPageRoute(
+                            builder: (_) => const WaterIntakePage(),
+                          ),
                         ),
                         child: const _SmallMetricCard(
                           title: 'Lượng nước đã uống',
@@ -229,12 +247,12 @@ class CarePage extends StatelessWidget {
   }
 
   Widget _row(Widget a, Widget b) => Row(
-        children: [
-          Expanded(child: a),
-          const SizedBox(width: 12),
-          Expanded(child: b),
-        ],
-      );
+    children: [
+      Expanded(child: a),
+      const SizedBox(width: 12),
+      Expanded(child: b),
+    ],
+  );
 }
 
 class _LargeMetricCard extends StatelessWidget {
@@ -286,7 +304,9 @@ class _LargeMetricCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.w300,
-                    color: Colors.black.withValues(alpha: 0.5), // Cập nhật chuẩn SDK mới
+                    color: Colors.black.withValues(
+                      alpha: 0.5,
+                    ), // Cập nhật chuẩn SDK mới
                   ),
                 ),
                 if (unit.isNotEmpty)
@@ -312,7 +332,11 @@ class _LargeMetricCard extends StatelessWidget {
           Positioned(
             right: 10,
             top: 10,
-            child: Icon(icon, size: 38, color: accentColor.withValues(alpha: 0.85)),
+            child: Icon(
+              icon,
+              size: 38,
+              color: accentColor.withValues(alpha: 0.85),
+            ),
           ),
           Positioned(
             bottom: 0,
@@ -362,7 +386,9 @@ class _SmallMetricCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04), // Cập nhật chuẩn SDK mới
+            color: Colors.black.withValues(
+              alpha: 0.04,
+            ), // Cập nhật chuẩn SDK mới
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

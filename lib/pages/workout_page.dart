@@ -279,11 +279,11 @@ class _WorkoutPageState extends State<WorkoutPage> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    "Stay active, feel great!",
+                    "Vận động hàng ngày để có cảm thấy khỏe mỗi ngày.",
                     style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                   const Text(
-                    "Choose your workout today.",
+                    "Chọn bài tập hôm nay.",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -303,7 +303,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Text(
-                'Workouts',
+                'Các bài tập sức khỏe',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -421,7 +421,7 @@ class _FeaturedCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'My Streak',
+                  'Chuỗi của bạn',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -430,7 +430,7 @@ class _FeaturedCard extends StatelessWidget {
                 ),
                 SizedBox(height: 2),
                 Text(
-                  'Keep going — 3 days in a row!',
+                  'Tiếp  — 3 days in a row!',
                   style: TextStyle(fontSize: 12, color: kSubText),
                 ),
               ],
