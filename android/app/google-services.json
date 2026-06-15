@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "462532276726",
+    "project_id": "healthsync-4775b",
+    "storage_bucket": "healthsync-4775b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:462532276726:android:a1080042553ff9d354d7d7",
+        "android_client_info": {
+          "package_name": "com.example.flutter_project_test"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCgTPCEQ6a_lnH8-iYiEWcmos2YCJyUWc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

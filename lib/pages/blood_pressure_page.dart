@@ -3,9 +3,7 @@ import 'dart:math' as math;
 import '../core/app_theme.dart';
 import 'add_record_page.dart';
 
-// ═══════════════════════════════════════════════════════════════════════
-//  Data Model
-// ═══════════════════════════════════════════════════════════════════════
+
 class BpRecord {
   final int systolic, diastolic, pulse;
   final DateTime dateTime;
@@ -35,9 +33,7 @@ class BpRecord {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-//  Blood Pressure Page
-// ═══════════════════════════════════════════════════════════════════════
+
 class BloodPressurePage extends StatefulWidget {
   const BloodPressurePage({super.key});
 
@@ -79,7 +75,6 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
     ),
   ];
 
-  // sort by date ascending for chart, descending for list
   List<BpRecord> get _chartRecords =>
       [..._records]..sort((a, b) => a.dateTime.compareTo(b.dateTime));
   List<BpRecord> get _listRecords =>
@@ -87,7 +82,6 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
 
   BpRecord? get _latest => _records.isEmpty ? null : _chartRecords.last;
 
-  // ─── Navigate → Add ────────────────────────────────────────────────
   Future<void> _openAddRecord() async {
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
@@ -97,7 +91,6 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
     setState(() => _records.add(_fromMap(result)));
   }
 
-  // ─── Navigate → Edit ───────────────────────────────────────────────
   Future<void> _openEditRecord(BpRecord original) async {
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
@@ -117,29 +110,28 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
     });
   }
 
-  // ─── Delete with confirm dialog ────────────────────────────────────
-  Future<void> _confirmDelete(BpRecord record) async {
+  Future<bool> _confirmDelete(BpRecord record) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
-          'Delete record',
+          'Xóa dữ liệu',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         content: Text(
-          'Delete record ${record.systolic}/${record.diastolic} mmHg on ${_formatDateTime(record.dateTime)}?',
+          'Bạn có chắc muốn xóa bản ghi ${record.systolic}/${record.diastolic} mmHg vào lúc ${_formatDateTime(record.dateTime)} không?',
           style: const TextStyle(fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel', style: TextStyle(color: kSubText)),
+            child: const Text('Hủy', style: TextStyle(color: kSubText)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text(
-              'Delete',
+              'Xóa',
               style: TextStyle(
                 color: Color(0xFFE53935),
                 fontWeight: FontWeight.bold,
@@ -149,7 +141,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
         ],
       ),
     );
-    if (ok == true) setState(() => _records.remove(record));
+    return ok ?? false;
   }
 
   BpRecord _fromMap(Map<String, dynamic> m) => BpRecord(
@@ -165,7 +157,6 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
     ),
   );
 
-  // ═══════════════════════════════════════════════════════════════════
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -209,7 +200,6 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
     );
   }
 
-  // ─── AppBar ──────────────────────────────────────────────────────────
   Widget _buildAppBar(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
     child: Row(
@@ -238,7 +228,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.25),
+          color: Colors.white.withValues(alpha: 0.25),
           borderRadius: BorderRadius.circular(20),
         ),
         child: const Row(
@@ -260,7 +250,6 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
     ),
   );
 
-  // ─── Latest Card ─────────────────────────────────────────────────────
   Widget _buildLatestCard() {
     final r = _latest;
     return Container(
@@ -270,7 +259,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -314,7 +303,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
-                color: r.category.color.withOpacity(0.12),
+                color: r.category.color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -332,7 +321,6 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
     );
   }
 
-  // ─── Chart Card ──────────────────────────────────────────────────────
   Widget _buildChartCard() => Container(
     padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
     decoration: BoxDecoration(
@@ -340,7 +328,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
       borderRadius: BorderRadius.circular(24),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.06),
+          color: Colors.black.withValues(alpha: 0.06),
           blurRadius: 10,
           offset: const Offset(0, 3),
         ),
@@ -390,7 +378,6 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
     ),
   );
 
-  // ─── Record List (swipe to delete, tap to edit) ───────────────────────
   Widget _buildRecordList() {
     final sorted = _listRecords;
     if (sorted.isEmpty) return const SizedBox.shrink();
@@ -401,7 +388,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -425,50 +412,11 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
             final r = sorted[i];
             return Column(
               children: [
-                // Swipe left → delete, tap → edit
                 Dismissible(
                   key: ValueKey(r.dateTime.millisecondsSinceEpoch),
                   direction: DismissDirection.endToStart,
-                  confirmDismiss: (_) async {
-                    // show confirm inside Dismissible
-                    final ok = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        title: const Text(
-                          'Delete record',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        content: Text(
-                          'Delete ${r.systolic}/${r.diastolic} mmHg?',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(color: kSubText),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text(
-                              'Delete',
-                              style: TextStyle(
-                                color: Color(0xFFE53935),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                    return ok == true;
-                  },
+                  confirmDismiss: (_) => _confirmDelete(r),
                   onDismissed: (_) => setState(() => _records.remove(r)),
-                  // Red delete background revealed on swipe
                   background: Container(
                     margin: const EdgeInsets.symmetric(vertical: 2),
                     padding: const EdgeInsets.only(right: 24),
@@ -555,7 +503,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: r.category.color.withOpacity(0.12),
+                              color: r.category.color.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -596,9 +544,6 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-//  BP Bar Chart (CustomPainter)
-// ═══════════════════════════════════════════════════════════════════════
 class _BpChart extends StatelessWidget {
   final List<BpRecord> records;
   const _BpChart({required this.records});
@@ -641,7 +586,6 @@ class _BpChartPainter extends CustomPainter {
       final sY = tP + cH * (1 - (r.systolic - _minY) / (_maxY - _minY));
       final dY = tP + cH * (1 - (r.diastolic - _minY) / (_maxY - _minY));
 
-      // bar coloured by category
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTRB(cx - bW / 2, sY, cx + bW / 2, dY),
@@ -683,9 +627,6 @@ class _BpChartPainter extends CustomPainter {
   bool shouldRepaint(_BpChartPainter old) => old.records != records;
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-//  Shared small widgets
-// ═══════════════════════════════════════════════════════════════════════
 class _StatItem extends StatelessWidget {
   final String label, value, unit;
   const _StatItem({

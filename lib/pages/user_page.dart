@@ -12,7 +12,6 @@ class UserPage extends StatefulWidget {
 }
 
 class _UserPageState extends State<UserPage> {
-  // null = chưa đăng nhập
   _UserProfile? _profile;
 
   void _openLogin() async {
