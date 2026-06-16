@@ -4,6 +4,7 @@ import 'login_page.dart';
 import 'package:flutter/material.dart';
 import '../core/app_theme.dart';
 import 'favorite_recipes_page.dart';
+import 'favorite_workouts_page.dart';
 
 // ═══════════════════════════════════════════════════════════════════════
 //  User Page — có login / profile
@@ -146,6 +147,12 @@ class _UserPageState extends State<UserPage> {
                   _SettingItem(
                     icon: Icons.fitness_center,
                     label: 'Bài tập yêu thích',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const FavoriteWorkoutsPage(),
+                      ),
+                    ),
                   ),
                 ],
               ),

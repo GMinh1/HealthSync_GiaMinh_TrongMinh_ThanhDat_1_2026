@@ -175,31 +175,6 @@ class CarePage extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (_) => const FeaturePlaceholderPage(
-                              title: 'Bác sĩ AI',
-                              icon: Icons.medical_services_outlined,
-                              color: Color(0xFFE91E8C),
-                            ),
-                          ),
-                        ),
-                        child: const _SmallMetricCard(
-                          title: 'Bác sĩ AI',
-                          value: '',
-                          unit: '',
-                          bgColor: Color(0xFFFFF0F5),
-                          icon: Icons.medical_services_outlined,
-                          iconColor: Color(0xFFE91E8C),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // ─── Reminder + Log Period ─────────────────────────
-                    _row(
-                      GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const FeaturePlaceholderPage(
                               title: 'Nhắc nhở',
                               icon: Icons.alarm_outlined,
                               color: Color(0xFFFFC107),
@@ -213,26 +188,6 @@ class CarePage extends StatelessWidget {
                           bgColor: Color(0xFFFFFBE8),
                           icon: Icons.alarm_outlined,
                           iconColor: Color(0xFFFFC107),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const FeaturePlaceholderPage(
-                              title: 'Lịch trình',
-                              icon: Icons.calendar_month_outlined,
-                              color: Color(0xFFEC407A),
-                            ),
-                          ),
-                        ),
-                        child: const _SmallMetricCard(
-                          title: 'Lịch trình',
-                          value: '--',
-                          unit: '',
-                          bgColor: Color(0xFFFFEEF5),
-                          icon: Icons.calendar_month_outlined,
-                          iconColor: Color(0xFFEC407A),
                         ),
                       ),
                     ),
