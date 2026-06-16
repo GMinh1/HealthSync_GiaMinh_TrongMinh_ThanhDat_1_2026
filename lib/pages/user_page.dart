@@ -3,6 +3,7 @@ import '../services/auth_service.dart';
 import 'login_page.dart';
 import 'package:flutter/material.dart';
 import '../core/app_theme.dart';
+import 'favorite_recipes_page.dart';
 
 // ═══════════════════════════════════════════════════════════════════════
 //  User Page — có login / profile
@@ -17,85 +18,77 @@ class UserPage extends StatefulWidget {
 class _UserPageState extends State<UserPage> {
   _UserProfile? _profile;
 
-@override
-void initState() {
-  super.initState();
+  @override
+  void initState() {
+    super.initState();
 
-  final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuth.instance.currentUser;
 
-  if (user != null) {
-    _profile = _UserProfile(
-      name: user.displayName ?? 'Người dùng',
-      email: user.email ?? '',
-    );
-  }
-}
-  void _openLogin() async {
-  await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => const LoginPage(),
-    ),
-  );
-
-  final user = FirebaseAuth.instance.currentUser;
-
-  print("CURRENT USER = ${user?.email}");
-
-  if (user != null) {
-    setState(() {
+    if (user != null) {
       _profile = _UserProfile(
         name: user.displayName ?? 'Người dùng',
         email: user.email ?? '',
       );
-    });
+    }
   }
-}
+
+  void _openLogin() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+    );
+
+    final user = FirebaseAuth.instance.currentUser;
+
+    print("CURRENT USER = ${user?.email}");
+
+    if (user != null) {
+      setState(() {
+        _profile = _UserProfile(
+          name: user.displayName ?? 'Người dùng',
+          email: user.email ?? '',
+        );
+      });
+    }
+  }
 
   void _logout() {
-  showDialog(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      title: const Text(
-        'Đăng xuất',
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-      content: const Text(
-        'Bạn có chắc muốn đăng xuất không?',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: const Text(
-            'Huỷ',
-            style: TextStyle(color: kSubText),
-          ),
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Đăng xuất',
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        TextButton(
-          onPressed: () async {
-            Navigator.pop(ctx);
+        content: const Text('Bạn có chắc muốn đăng xuất không?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Huỷ', style: TextStyle(color: kSubText)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
 
-            await AuthService().signOut();
+              await AuthService().signOut();
 
-            setState(() {
-              _profile = null;
-            });
-          },
-          child: const Text(
-            'Đăng xuất',
-            style: TextStyle(
-              color: Color(0xFFE53935),
-              fontWeight: FontWeight.bold,
+              setState(() {
+                _profile = null;
+              });
+            },
+            child: const Text(
+              'Đăng xuất',
+              style: TextStyle(
+                color: Color(0xFFE53935),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,43 +109,21 @@ void initState() {
               const SizedBox(height: 28),
 
               // ── General ──────────────────────────────────────────────
-              const _SectionHeader('General'),
+              const _SectionHeader('Thông báo'),
               const SizedBox(height: 10),
               const _SettingsCard(
                 items: [
                   _SettingItem(icon: Icons.alarm_outlined, label: 'Nhắc nhở'),
-                  _SettingItem(
-                    icon: Icons.language_outlined,
-                    label: 'Ngôn ngữ',
-                  ),
-                  _SettingItem(
-                    icon: Icons.notifications_outlined,
-                    label: 'Thông báo',
-                  ),
                 ],
               ),
 
               const SizedBox(height: 22),
 
               // ── Service & Policy ─────────────────────────────────────
-              const _SectionHeader('Dịch vụ & Chính sách'),
+              const _SectionHeader('Về dịch vụ của chúng tôi'),
               const SizedBox(height: 10),
               const _SettingsCard(
-                items: [
-                  _SettingItem(
-                    icon: Icons.thumb_up_outlined,
-                    label: 'Đánh giá ứng dụng',
-                  ),
-                  _SettingItem(
-                    icon: Icons.description_outlined,
-                    label: 'Chính sách bảo mật',
-                  ),
-                  _SettingItem(
-                    icon: Icons.info_outline,
-                    label: 'Phiên bản',
-                    versionTag: 'v1.0.63',
-                  ),
-                ],
+                items: [_SettingItem(icon: Icons.info_outline, label: 'About')],
               ),
 
               const SizedBox(height: 22),
@@ -160,11 +131,21 @@ void initState() {
               // ── Collection ───────────────────────────────────────────
               const _SectionHeader('Bộ sưu tập'),
               const SizedBox(height: 10),
-              const _SettingsCard(
+              _SettingsCard(
                 items: [
                   _SettingItem(
                     icon: Icons.menu_book_outlined,
                     label: 'Túi công thức',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const FavoriteRecipesPage(),
+                      ),
+                    ),
+                  ),
+                  _SettingItem(
+                    icon: Icons.fitness_center,
+                    label: 'Bài tập yêu thích',
                   ),
                 ],
               ),
@@ -427,10 +408,6 @@ class _ProfileAction extends StatelessWidget {
   }
 }
 
-
-
-
-
 // ═══════════════════════════════════════════════════════════════════════
 //  User profile model
 // ═══════════════════════════════════════════════════════════════════════
@@ -474,10 +451,13 @@ class _SettingItem {
   final IconData icon;
   final String label;
   final String? versionTag;
+  final VoidCallback? onTap;
+
   const _SettingItem({
     required this.icon,
     required this.label,
     this.versionTag,
+    this.onTap,
   });
 }
 
@@ -505,7 +485,7 @@ class _SettingsCard extends StatelessWidget {
           return Column(
             children: [
               GestureDetector(
-                onTap: () {},
+                onTap: item.onTap,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,

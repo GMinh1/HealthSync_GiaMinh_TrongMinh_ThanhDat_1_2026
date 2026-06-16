@@ -421,7 +421,7 @@ class _FeaturedCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Chuỗi của bạn',
+                  'Bài tập yêu thích',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -430,7 +430,7 @@ class _FeaturedCard extends StatelessWidget {
                 ),
                 SizedBox(height: 2),
                 Text(
-                  'Tiếp  — 3 days in a row!',
+                  'Lưu bài tập luyện của bạn',
                   style: TextStyle(fontSize: 12, color: kSubText),
                 ),
               ],
