@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
+import 'package:pedometer/pedometer.dart'; // Thêm thư viện đếm bước
+import 'package:permission_handler/permission_handler.dart'; // Thêm thư viện xin quyền
 import '../core/app_theme.dart';
 import '../core/shared_widgets.dart';
 import '../services/db_service.dart'; 
@@ -22,7 +24,7 @@ class CarePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const PageTitle('Care'),
+            const PageTitle('Theo dõi sức khỏe'), // Đã việt hóa lại tiêu đề cho đồng bộ
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
@@ -61,24 +63,10 @@ class CarePage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const StepsPage(),
-                              ),
-                            ),
-                            // Bước chân
-                            child: const _LargeMetricCard(
-                              title: 'Bước chân',
-                              value: '6540', 
-                              unit: '',
-                              bgGradient: [Color(0xFFD0F8E8), Color(0xFFB8F0D8)],
-                              accentColor: kGreen,
-                              icon: Icons.directions_walk,
-                            ),
-                          ),
+                        
+                        // Sử dụng Widget đếm bước chân thời gian thực mới tạo
+                        const Expanded(
+                          child: _LiveStepsCard(),
                         ),
                       ],
                     ),
@@ -228,6 +216,72 @@ class CarePage extends StatelessWidget {
       );
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+//  Widget Live Steps Card (Đếm bước chân thời gian thực)
+// ═══════════════════════════════════════════════════════════════════════
+class _LiveStepsCard extends StatefulWidget {
+  const _LiveStepsCard();
+
+  @override
+  State<_LiveStepsCard> createState() => _LiveStepsCardState();
+}
+
+class _LiveStepsCardState extends State<_LiveStepsCard> {
+  late Stream<StepCount> _stepCountStream;
+  String _steps = '--';
+
+  @override
+  void initState() {
+    super.initState();
+    _requestPermission();
+  }
+
+  Future<void> _requestPermission() async {
+    if (await Permission.activityRecognition.request().isGranted) {
+      _initPedometer();
+    } else {
+      if (mounted) setState(() => _steps = 'Cấp quyền');
+    }
+  }
+
+  void _initPedometer() {
+    _stepCountStream = Pedometer.stepCountStream;
+    _stepCountStream.listen(
+      (StepCount event) {
+        if (mounted) {
+          setState(() {
+            _steps = event.steps.toString();
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) setState(() => _steps = 'Lỗi');
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const StepsPage()),
+      ),
+      child: _LargeMetricCard(
+        title: 'Bước chân',
+        value: _steps,
+        unit: 'bước',
+        bgGradient: const [Color(0xFFD0F8E8), Color(0xFFB8F0D8)],
+        accentColor: kGreen,
+        icon: Icons.directions_walk,
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Shared UI Components
+// ═══════════════════════════════════════════════════════════════════════
 class _LargeMetricCard extends StatelessWidget {
   final String title, value, unit;
   final List<Color> bgGradient;
@@ -279,6 +333,8 @@ class _LargeMetricCard extends StatelessWidget {
                     fontWeight: FontWeight.w300,
                     color: Colors.black.withValues(alpha: 0.5),
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 if (unit.isNotEmpty)
                   Text(
@@ -289,7 +345,7 @@ class _LargeMetricCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 52),
                   child: Text(
-                    '• Lịch sử >',
+                    '• Xem chi tiết >',
                     style: TextStyle(
                       fontSize: 12,
                       color: accentColor,
@@ -318,7 +374,7 @@ class _LargeMetricCard extends StatelessWidget {
               color: Colors.white,
               child: Center(
                 child: Text(
-                  'Xem >',
+                  'Chi tiết >',
                   style: TextStyle(
                     color: accentColor,
                     fontSize: 15,

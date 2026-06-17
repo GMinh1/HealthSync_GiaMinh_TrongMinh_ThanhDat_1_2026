@@ -50,6 +50,9 @@ class _UserPageState extends State<UserPage> {
           _profile = _UserProfile(
             name: data['name'] ?? user.displayName ?? 'Người dùng',
             email: data['email'] ?? user.email ?? '',
+            phone: data['phone'] ?? '',
+            gender: data['gender'] ?? 'Chưa xác định',
+            birthYear: data['birth_year'] ?? '',
           );
           
           _waterReminder = data['water_reminder'] ?? true;
@@ -85,7 +88,6 @@ class _UserPageState extends State<UserPage> {
           ),
           TextButton(
             onPressed: () async {
-              // Bắt Navigator của hộp thoại TRƯỚC KHI await
               final navigator = Navigator.of(ctx);
               navigator.pop();
               
@@ -106,6 +108,190 @@ class _UserPageState extends State<UserPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ─── BẢNG SỬA HỒ SƠ ĐẦY ĐỦ THÔNG TIN ────────────────────────────────────────────
+  void _showEditProfileSheet(BuildContext context) {
+    if (_profile == null) return;
+
+    // Lưu tạm các giá trị người dùng nhập
+    String inputName = _profile!.name;
+    String inputPhone = _profile!.phone;
+    String inputGender = _profile!.gender;
+    String inputBirthYear = _profile!.birthYear;
+
+    final List<String> genderOptions = ['Nam', 'Nữ', 'Khác', 'Chưa xác định'];
+    if (!genderOptions.contains(inputGender)) {
+      inputGender = 'Chưa xác định';
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, 
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Center(
+                    child: Text('Thông tin cá nhân', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kText)),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // Tên hiển thị
+                  TextFormField(
+                    initialValue: inputName,
+                    decoration: InputDecoration(
+                      labelText: 'Tên hiển thị',
+                      prefixIcon: const Icon(Icons.person_outline, color: kGreen),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(color: kGreen, width: 2),
+                      ),
+                    ),
+                    onChanged: (val) => inputName = val,
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Số điện thoại
+                  TextFormField(
+                    initialValue: inputPhone,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      labelText: 'Số điện thoại',
+                      prefixIcon: const Icon(Icons.phone_outlined, color: kGreen),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(color: kGreen, width: 2),
+                      ),
+                    ),
+                    onChanged: (val) => inputPhone = val,
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Hàng chứa Năm sinh và Giới tính
+                  Row(
+                    children: [
+                      // Năm sinh
+                      Expanded(
+                        child: TextFormField(
+                          initialValue: inputBirthYear,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Năm sinh',
+                            prefixIcon: const Icon(Icons.calendar_today_outlined, color: kGreen),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(color: kGreen, width: 2),
+                            ),
+                          ),
+                          onChanged: (val) => inputBirthYear = val,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      
+                      // Giới tính
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: inputGender,
+                          decoration: InputDecoration(
+                            labelText: 'Giới tính',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(color: kGreen, width: 2),
+                            ),
+                          ),
+                          items: genderOptions.map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setSheetState(() => inputGender = val);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        final navigator = Navigator.of(sheetContext);
+                        
+                        navigator.pop(); 
+                        
+                        // 1. Cập nhật Auth
+                        final user = FirebaseAuth.instance.currentUser;
+                        if (user != null && inputName.isNotEmpty) {
+                          await user.updateDisplayName(inputName);
+                        }
+
+                        // 2. Cập nhật Firestore
+                        await DatabaseService().saveUserProfile({
+                          'name': inputName,
+                          'phone': inputPhone,
+                          'gender': inputGender,
+                          'birth_year': inputBirthYear,
+                        });
+                        
+                        // 3. Cập nhật giao diện
+                        if (mounted) {
+                          setState(() {
+                            _profile = _UserProfile(
+                              name: inputName, 
+                              email: _profile!.email,
+                              phone: inputPhone,
+                              gender: inputGender,
+                              birthYear: inputBirthYear,
+                            );
+                          });
+                          
+                          messenger.showSnackBar(
+                            const SnackBar(
+                              content: Text('Cập nhật hồ sơ thành công!'),
+                              backgroundColor: kGreen,
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kGreen,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: const Text('Lưu thay đổi', style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -204,7 +390,6 @@ class _UserPageState extends State<UserPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () async {
-                      // BẮT SỐNG NAVIGATOR & MESSENGER TRƯỚC KHI AWAIT
                       final messenger = ScaffoldMessenger.of(context);
                       final navigator = Navigator.of(sheetContext);
                       
@@ -254,7 +439,11 @@ class _UserPageState extends State<UserPage> {
             children: [
               _profile == null
                   ? _GuestCard(onLogin: _openLogin)
-                  : _ProfileCard(profile: _profile!, onLogout: _logout),
+                  : _ProfileCard(
+                      profile: _profile!, 
+                      onLogout: _logout,
+                      onEdit: () => _showEditProfileSheet(context),
+                    ),
 
               const SizedBox(height: 28),
 
@@ -423,7 +612,13 @@ class _GuestCard extends StatelessWidget {
 class _ProfileCard extends StatelessWidget {
   final _UserProfile profile;
   final VoidCallback onLogout;
-  const _ProfileCard({required this.profile, required this.onLogout});
+  final VoidCallback onEdit;
+
+  const _ProfileCard({
+    required this.profile, 
+    required this.onLogout,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -447,7 +642,7 @@ class _ProfileCard extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
             child: Row(
               children: [
                 Container(
@@ -486,15 +681,44 @@ class _ProfileCard extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        profile.email,
+                        profile.phone.isNotEmpty ? profile.phone : profile.email,
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.white.withValues(alpha: 0.85),
                         ),
                       ),
+                      if (profile.gender != 'Chưa xác định' || profile.birthYear.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            if (profile.gender != 'Chưa xác định')
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(profile.gender, style: const TextStyle(fontSize: 11, color: Colors.white)),
+                              ),
+                            if (profile.gender != 'Chưa xác định' && profile.birthYear.isNotEmpty)
+                              const SizedBox(width: 6),
+                            if (profile.birthYear.isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text('Sinh: ${profile.birthYear}', style: const TextStyle(fontSize: 11, color: Colors.white)),
+                              ),
+                          ],
+                        )
+                      ]
                     ],
                   ),
                 ),
@@ -508,7 +732,7 @@ class _ProfileCard extends StatelessWidget {
                 child: _ProfileAction(
                   icon: Icons.edit_outlined,
                   label: 'Sửa hồ sơ',
-                  onTap: () {},
+                  onTap: onEdit,
                 ),
               ),
               Container(
@@ -567,9 +791,18 @@ class _ProfileAction extends StatelessWidget {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+//  User profile model (Cập nhật các trường mới)
+// ═══════════════════════════════════════════════════════════════════════
 class _UserProfile {
-  final String name, email;
-  const _UserProfile({required this.name, required this.email});
+  final String name, email, phone, gender, birthYear;
+  const _UserProfile({
+    required this.name, 
+    required this.email,
+    this.phone = '',
+    this.gender = 'Chưa xác định',
+    this.birthYear = '',
+  });
 }
 
 class _SectionHeader extends StatelessWidget {
