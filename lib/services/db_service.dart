@@ -22,4 +22,19 @@ class DatabaseService {
         .orderBy('timestamp', descending: true)
         .snapshots();
   }
+
+  // Lấy thông tin hồ sơ người dùng từ Firestore dựa theo UID độc nhất
+  Future<DocumentSnapshot?> getUserProfile() async {
+    if (uid == null) return null;
+    return await _db.collection('users').doc(uid).get();
+  }
+
+  // Khởi tạo hoặc cập nhật thông tin cá nhân (merge: true để tránh ghi đè mất dữ liệu cũ)
+  Future<void> saveUserProfile(Map<String, dynamic> data) async {
+    if (uid == null) return;
+    await _db.collection('users').doc(uid).set({
+      ...data,
+      'last_login': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
 }

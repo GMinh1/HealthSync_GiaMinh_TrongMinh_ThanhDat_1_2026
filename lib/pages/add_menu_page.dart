@@ -7,8 +7,6 @@ import 'heart_rate_page.dart';
 import 'steps_page.dart';
 import 'weight_bmi_page.dart';
 import 'blood_sugar_page.dart';
-import 'fitness_page.dart';
-
 class AddMenuPage extends StatelessWidget {
   const AddMenuPage({super.key});
 
@@ -62,12 +60,6 @@ class AddMenuPage extends StatelessWidget {
             icon: Icons.local_drink,
             color: const Color(0xFF29B6F6),
             onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const WaterIntakePage())),
-          ),
-          _MenuCard(
-            title: 'Tập luyện',
-            icon: Icons.fitness_center,
-            color: kGreen,
-            onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const FitnessPage())),
           ),
           _MenuCard(
             title: 'Bước chân',

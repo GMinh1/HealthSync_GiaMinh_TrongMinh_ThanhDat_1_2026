@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'db_service.dart'; // Đã import để gọi tầng cơ sở dữ liệu
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -27,9 +28,19 @@ class AuthService {
       );
 
       final result =
-          await FirebaseAuth.instance.signInWithCredential(credential);
+          await _auth.signInWithCredential(credential);
 
       print("Firebase User: ${result.user?.email}");
+
+      // TỰ ĐỘNG ĐỒNG BỘ/LƯU THÔNG TIN CƠ BẢN VÀO FIRESTORE KHI ĐĂNG NHẬP THÀNH CÔNG
+      final user = result.user;
+      if (user != null) {
+        await DatabaseService().saveUserProfile({
+          'email': user.email,
+          'name': user.displayName ?? 'Người dùng HealthSync',
+          'photoUrl': user.photoURL ?? '',
+        });
+      }
 
       return result;
     } catch (e) {
@@ -40,6 +51,6 @@ class AuthService {
 
   Future<void> signOut() async {
     await GoogleSignIn().signOut();
-    await FirebaseAuth.instance.signOut();
+    await _auth.signOut();
   }
 }

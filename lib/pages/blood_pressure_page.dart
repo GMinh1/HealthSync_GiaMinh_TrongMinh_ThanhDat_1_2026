@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'dart:math' as math;
 import '../core/app_theme.dart';
+import '../services/db_service.dart'; // Import DatabaseService
 import 'add_record_page.dart';
 
 class BpRecord {
+  final DocumentReference? ref; // Thêm ref để tiện việc Sửa/Xoá trên Firebase
   final int systolic, diastolic, pulse;
   final DateTime dateTime;
 
   BpRecord({
+    this.ref,
     required this.systolic,
     required this.diastolic,
     required this.pulse,
@@ -18,18 +22,6 @@ class BpRecord {
 
   String get dateLabel =>
       '${dateTime.month.toString().padLeft(2, '0')}.${dateTime.day.toString().padLeft(2, '0')}';
-
-  BpRecord copyWith({
-    int? systolic,
-    int? diastolic,
-    int? pulse,
-    DateTime? dateTime,
-  }) => BpRecord(
-    systolic: systolic ?? this.systolic,
-    diastolic: diastolic ?? this.diastolic,
-    pulse: pulse ?? this.pulse,
-    dateTime: dateTime ?? this.dateTime,
-  );
 }
 
 class BloodPressurePage extends StatefulWidget {
@@ -40,45 +32,19 @@ class BloodPressurePage extends StatefulWidget {
 }
 
 class _BloodPressurePageState extends State<BloodPressurePage> {
-  final List<BpRecord> _records = [
-    BpRecord(
-      systolic: 110,
-      diastolic: 70,
-      pulse: 70,
-      dateTime: DateTime(2025, 5, 18, 9, 32),
-    ),
-    BpRecord(
-      systolic: 118,
-      diastolic: 75,
-      pulse: 72,
-      dateTime: DateTime(2025, 6, 10, 8, 15),
-    ),
-    BpRecord(
-      systolic: 125,
-      diastolic: 82,
-      pulse: 80,
-      dateTime: DateTime(2025, 9, 5, 7, 44),
-    ),
-    BpRecord(
-      systolic: 105,
-      diastolic: 65,
-      pulse: 68,
-      dateTime: DateTime(2025, 11, 20, 10, 0),
-    ),
-    BpRecord(
-      systolic: 135,
-      diastolic: 88,
-      pulse: 85,
-      dateTime: DateTime(2026, 1, 14, 9, 0),
-    ),
-  ];
-
-  List<BpRecord> get _chartRecords =>
-      [..._records]..sort((a, b) => a.dateTime.compareTo(b.dateTime));
-  List<BpRecord> get _listRecords =>
-      [..._records]..sort((a, b) => b.dateTime.compareTo(a.dateTime));
-
-  BpRecord? get _latest => _records.isEmpty ? null : _chartRecords.last;
+  
+  // Hàm chuyển đổi dữ liệu từ Firestore thành model BpRecord
+  BpRecord _fromFirestore(DocumentSnapshot doc) {
+    final m = doc.data() as Map<String, dynamic>;
+    final ts = m['timestamp'] as Timestamp?;
+    return BpRecord(
+      ref: doc.reference,
+      systolic: m['systolic'] as int? ?? 0,
+      diastolic: m['diastolic'] as int? ?? 0,
+      pulse: m['pulse'] as int? ?? 0,
+      dateTime: ts?.toDate() ?? DateTime.now(),
+    );
+  }
 
   Future<void> _openAddRecord() async {
     final result = await Navigator.push<Map<String, dynamic>>(
@@ -86,7 +52,16 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
       MaterialPageRoute(builder: (_) => const AddRecordPage()),
     );
     if (result == null) return;
-    setState(() => _records.add(_fromMap(result)));
+    
+    // Đẩy dữ liệu mới lên Firebase
+    await DatabaseService().saveHealthRecord(
+      'blood_pressure', 
+      {
+        'systolic': result['systolic'],
+        'diastolic': result['diastolic'],
+        'pulse': result['pulse'],
+      }
+    );
   }
 
   Future<void> _openEditRecord(BpRecord original) async {
@@ -101,10 +76,13 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
         ),
       ),
     );
-    if (result == null) return;
-    setState(() {
-      final idx = _records.indexOf(original);
-      if (idx != -1) _records[idx] = _fromMap(result);
+    if (result == null || original.ref == null) return;
+    
+    // Cập nhật dữ liệu cũ trên Firebase
+    await original.ref!.update({
+      'systolic': result['systolic'],
+      'diastolic': result['diastolic'],
+      'pulse': result['pulse'],
     });
   }
 
@@ -118,7 +96,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         content: Text(
-          'Bạn có chắc muốn xóa bản ghi ${record.systolic}/${record.diastolic} mmHg vào lúc ${_formatDateTime(record.dateTime)} không?',
+          'Bạn có chắc muốn xóa bản ghi ${record.systolic}/${record.diastolic} mmHg không?',
           style: const TextStyle(fontSize: 14),
         ),
         actions: [
@@ -142,19 +120,6 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
     return ok ?? false;
   }
 
-  BpRecord _fromMap(Map<String, dynamic> m) => BpRecord(
-    systolic: m['systolic'] as int,
-    diastolic: m['diastolic'] as int,
-    pulse: m['pulse'] as int,
-    dateTime: DateTime(
-      m['year'] as int,
-      m['month'] as int,
-      m['day'] as int,
-      m['hour'] as int,
-      m['minute'] as int,
-    ),
-  );
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -177,17 +142,36 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
                 _buildAppBar(context),
                 _buildDateFilter(),
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                    child: Column(
-                      children: [
-                        _buildLatestCard(),
-                        const SizedBox(height: 16),
-                        _buildChartCard(),
-                        const SizedBox(height: 16),
-                        _buildRecordList(),
-                      ],
-                    ),
+                  // BỌC NỘI DUNG BẰNG STREAMBUILDER
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: DatabaseService().getRecordsStream('blood_pressure'),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      // Chuyển đổi dữ liệu Firebase thành List<BpRecord>
+                      final docs = snapshot.hasData ? snapshot.data!.docs : [];
+                      final listRecords = docs.map((doc) => _fromFirestore(doc)).toList();
+                      
+                      // Dữ liệu trên Firebase đã sắp xếp mới nhất ở đầu (cho list)
+                      // Dữ liệu cho biểu đồ cần đảo ngược lại (cũ nhất -> mới nhất)
+                      final chartRecords = listRecords.reversed.toList();
+                      final latest = listRecords.isNotEmpty ? listRecords.first : null;
+
+                      return SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                        child: Column(
+                          children: [
+                            _buildLatestCard(latest),
+                            const SizedBox(height: 16),
+                            _buildChartCard(chartRecords),
+                            const SizedBox(height: 16),
+                            _buildRecordList(listRecords),
+                          ],
+                        ),
+                      );
+                    }
                   ),
                 ),
               ],
@@ -233,7 +217,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '27 Th5, 2025 - 27 Th5, 2026',
+              'Gần đây nhất',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 13,
@@ -248,8 +232,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
     ),
   );
 
-  Widget _buildLatestCard() {
-    final r = _latest;
+  Widget _buildLatestCard(BpRecord? r) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -319,7 +302,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
     );
   }
 
-  Widget _buildChartCard() => Container(
+  Widget _buildChartCard(List<BpRecord> chartRecords) => Container(
     padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
     decoration: BoxDecoration(
       color: Colors.white,
@@ -336,14 +319,14 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
       children: [
         SizedBox(
           height: 220,
-          child: _records.isEmpty
+          child: chartRecords.isEmpty
               ? const Center(
                   child: Text(
-                    'No records yet',
+                    'Chưa có dữ liệu',
                     style: TextStyle(color: kSubText),
                   ),
                 )
-              : _BpChart(records: _chartRecords),
+              : _BpChart(records: chartRecords),
         ),
         const SizedBox(height: 12),
         GestureDetector(
@@ -376,9 +359,8 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
     ),
   );
 
-  Widget _buildRecordList() {
-    final sorted = _listRecords;
-    if (sorted.isEmpty) return const SizedBox.shrink();
+  Widget _buildRecordList(List<BpRecord> sortedList) {
+    if (sortedList.isEmpty) return const SizedBox.shrink();
 
     return Container(
       decoration: BoxDecoration(
@@ -398,7 +380,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
             child: Text(
-              'History',
+              'Lịch sử đo',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -406,15 +388,18 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
               ),
             ),
           ),
-          ...List.generate(sorted.length, (i) {
-            final r = sorted[i];
+          ...List.generate(sortedList.length, (i) {
+            final r = sortedList[i];
             return Column(
               children: [
                 Dismissible(
-                  key: ValueKey(r.dateTime.millisecondsSinceEpoch),
+                  key: ValueKey(r.ref?.id ?? r.dateTime.millisecondsSinceEpoch),
                   direction: DismissDirection.endToStart,
                   confirmDismiss: (_) => _confirmDelete(r),
-                  onDismissed: (_) => setState(() => _records.remove(r)),
+                  onDismissed: (_) async {
+                    // XOÁ TRỰC TIẾP TRÊN FIREBASE
+                    await r.ref?.delete();
+                  },
                   background: Container(
                     margin: const EdgeInsets.symmetric(vertical: 2),
                     padding: const EdgeInsets.only(right: 24),
@@ -424,7 +409,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
                         topRight: i == 0
                             ? const Radius.circular(24)
                             : Radius.zero,
-                        bottomRight: i == sorted.length - 1
+                        bottomRight: i == sortedList.length - 1
                             ? const Radius.circular(24)
                             : Radius.zero,
                       ),
@@ -460,7 +445,6 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
                       ),
                       child: Row(
                         children: [
-                          // Category dot
                           Container(
                             width: 10,
                             height: 10,
@@ -470,7 +454,6 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          // Values + date
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -494,7 +477,6 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
                               ],
                             ),
                           ),
-                          // Category badge
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
@@ -514,7 +496,6 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          // Edit icon hint
                           const Icon(
                             Icons.edit_outlined,
                             size: 16,
@@ -525,7 +506,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
                     ),
                   ),
                 ),
-                if (i < sorted.length - 1)
+                if (i < sortedList.length - 1)
                   const Divider(height: 0, indent: 42, color: kDivider),
               ],
             );
@@ -537,7 +518,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
   }
 
   String _formatDateTime(DateTime dt) {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const days = ['Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'CN'];
     return '${days[dt.weekday - 1]}, ${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}  ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 }

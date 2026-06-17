@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; 
 import '../core/app_theme.dart';
 import '../core/shared_widgets.dart';
+import '../services/db_service.dart'; 
 
 import 'blood_pressure_page.dart';
 import 'water_intake_page.dart';
@@ -8,9 +10,6 @@ import 'heart_rate_page.dart';
 import 'steps_page.dart';
 import 'weight_bmi_page.dart';
 import 'blood_sugar_page.dart';
-import 'fitness_page.dart';
-
-import 'feature_placeholder_page.dart';
 
 class CarePage extends StatelessWidget {
   const CarePage({super.key});
@@ -40,16 +39,24 @@ class CarePage extends StatelessWidget {
                                 builder: (_) => const HeartRatePage(),
                               ),
                             ),
-                            child: const _LargeMetricCard(
-                              title: 'Nhịp tim',
-                              value: '78',
-                              unit: 'BPM',
-                              bgGradient: [
-                                Color(0xFFFFD6D6),
-                                Color(0xFFFFBEBE),
-                              ],
-                              accentColor: Color(0xFFE53935),
-                              icon: Icons.favorite,
+                            // Lắng nghe dữ liệu Nhịp tim
+                            child: StreamBuilder<QuerySnapshot>(
+                              stream: DatabaseService().getRecordsStream('heart_rate'),
+                              builder: (context, snapshot) {
+                                String bpmValue = '--';
+                                if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                                  final data = snapshot.data!.docs.first.data() as Map<String, dynamic>;
+                                  bpmValue = data['bpm']?.toString() ?? '--';
+                                }
+                                return _LargeMetricCard(
+                                  title: 'Nhịp tim',
+                                  value: bpmValue,
+                                  unit: 'BPM',
+                                  bgGradient: const [Color(0xFFFFD6D6), Color(0xFFFFBEBE)],
+                                  accentColor: const Color(0xFFE53935),
+                                  icon: Icons.favorite,
+                                );
+                              }
                             ),
                           ),
                         ),
@@ -62,14 +69,12 @@ class CarePage extends StatelessWidget {
                                 builder: (_) => const StepsPage(),
                               ),
                             ),
+                            // Bước chân
                             child: const _LargeMetricCard(
                               title: 'Bước chân',
-                              value: '6540',
+                              value: '6540', 
                               unit: '',
-                              bgGradient: [
-                                Color(0xFFD0F8E8),
-                                Color(0xFFB8F0D8),
-                              ],
+                              bgGradient: [Color(0xFFD0F8E8), Color(0xFFB8F0D8)],
                               accentColor: kGreen,
                               icon: Icons.directions_walk,
                             ),
@@ -88,13 +93,24 @@ class CarePage extends StatelessWidget {
                             builder: (_) => const BloodPressurePage(),
                           ),
                         ),
-                        child: const _SmallMetricCard(
-                          title: 'Huyết áp',
-                          value: '110/70',
-                          unit: 'mmHg',
-                          bgColor: Color(0xFFECF3FF),
-                          icon: Icons.monitor_heart_outlined,
-                          iconColor: Color(0xFF5B8DEF),
+                        // Lắng nghe dữ liệu Huyết áp
+                        child: StreamBuilder<QuerySnapshot>(
+                          stream: DatabaseService().getRecordsStream('blood_pressure'),
+                          builder: (context, snapshot) {
+                            String bpValue = '--/--';
+                            if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                              final data = snapshot.data!.docs.first.data() as Map<String, dynamic>;
+                              bpValue = '${data['systolic'] ?? '--'}/${data['diastolic'] ?? '--'}';
+                            }
+                            return _SmallMetricCard(
+                              title: 'Huyết áp',
+                              value: bpValue,
+                              unit: 'mmHg',
+                              bgColor: const Color(0xFFECF3FF),
+                              icon: Icons.monitor_heart_outlined,
+                              iconColor: const Color(0xFF5B8DEF),
+                            );
+                          }
                         ),
                       ),
                       GestureDetector(
@@ -104,13 +120,24 @@ class CarePage extends StatelessWidget {
                             builder: (_) => const WeightBmiPage(),
                           ),
                         ),
-                        child: const _SmallMetricCard(
-                          title: 'BMI',
-                          value: '65.5',
-                          unit: 'kg',
-                          bgColor: Color(0xFFF0EEFF),
-                          icon: Icons.scale_outlined,
-                          iconColor: Color(0xFF7C6FEF),
+                        // Lắng nghe dữ liệu Cân nặng
+                        child: StreamBuilder<QuerySnapshot>(
+                          stream: DatabaseService().getRecordsStream('weight_bmi'),
+                          builder: (context, snapshot) {
+                            String weightValue = '--';
+                            if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                              final data = snapshot.data!.docs.first.data() as Map<String, dynamic>;
+                              weightValue = data['weight']?.toString() ?? '--';
+                            }
+                            return _SmallMetricCard(
+                              title: 'Cân nặng',
+                              value: weightValue,
+                              unit: 'kg',
+                              bgColor: const Color(0xFFF0EEFF),
+                              icon: Icons.scale_outlined,
+                              iconColor: const Color(0xFF7C6FEF),
+                            );
+                          }
                         ),
                       ),
                     ),
@@ -125,13 +152,24 @@ class CarePage extends StatelessWidget {
                             builder: (_) => const BloodSugarPage(),
                           ),
                         ),
-                        child: const _SmallMetricCard(
-                          title: 'Đường huyết',
-                          value: '95',
-                          unit: 'mg/dL',
-                          bgColor: Color(0xFFFFF5E8),
-                          icon: Icons.water_drop_outlined,
-                          iconColor: Color(0xFFEF9A3A),
+                        // Lắng nghe dữ liệu Đường huyết
+                        child: StreamBuilder<QuerySnapshot>(
+                          stream: DatabaseService().getRecordsStream('blood_sugar'),
+                          builder: (context, snapshot) {
+                            String sugarValue = '--';
+                            if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                              final data = snapshot.data!.docs.first.data() as Map<String, dynamic>;
+                              sugarValue = data['value']?.toString() ?? '--';
+                            }
+                            return _SmallMetricCard(
+                              title: 'Đường huyết',
+                              value: sugarValue,
+                              unit: 'mg/dL',
+                              bgColor: const Color(0xFFFFF5E8),
+                              icon: Icons.water_drop_outlined,
+                              iconColor: const Color(0xFFEF9A3A),
+                            );
+                          }
                         ),
                       ),
                       GestureDetector(
@@ -141,53 +179,33 @@ class CarePage extends StatelessWidget {
                             builder: (_) => const WaterIntakePage(),
                           ),
                         ),
-                        child: const _SmallMetricCard(
-                          title: 'Lượng nước đã uống',
-                          value: '250',
-                          unit: '/2000ml',
-                          bgColor: Color(0xFFE8F5FF),
-                          icon: Icons.local_drink_outlined,
-                          iconColor: Color(0xFF29B6F6),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    _row(
-                      GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const FitnessPage(),
-                          ),
-                        ),
-                        child: const _SmallMetricCard(
-                          title: 'Tập luyện',
-                          value: '',
-                          unit: '',
-                          bgColor: Color(0xFFEEF8EC),
-                          icon: Icons.fitness_center_outlined,
-                          iconColor: kGreen,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const FeaturePlaceholderPage(
-                              title: 'Nhắc nhở',
-                              icon: Icons.alarm_outlined,
-                              color: Color(0xFFFFC107),
-                            ),
-                          ),
-                        ),
-                        child: const _SmallMetricCard(
-                          title: 'Nhắc nhở',
-                          value: '',
-                          unit: '',
-                          bgColor: Color(0xFFFFFBE8),
-                          icon: Icons.alarm_outlined,
-                          iconColor: Color(0xFFFFC107),
+                        // Lắng nghe tổng lượng nước uống trong ngày
+                        child: StreamBuilder<QuerySnapshot>(
+                          stream: DatabaseService().getRecordsStream('water_intake'),
+                          builder: (context, snapshot) {
+                            int todayWater = 0;
+                            final now = DateTime.now();
+                            if (snapshot.hasData) {
+                              for (var doc in snapshot.data!.docs) {
+                                final data = doc.data() as Map<String, dynamic>;
+                                final ts = data['timestamp'] as Timestamp?;
+                                if (ts != null) {
+                                  final date = ts.toDate();
+                                  if (date.year == now.year && date.month == now.month && date.day == now.day) {
+                                    todayWater += (data['amount'] as num?)?.toInt() ?? 0;
+                                  }
+                                }
+                              }
+                            }
+                            return _SmallMetricCard(
+                              title: 'Nước đã uống',
+                              value: todayWater.toString(),
+                              unit: '/2000ml',
+                              bgColor: const Color(0xFFE8F5FF),
+                              icon: Icons.local_drink_outlined,
+                              iconColor: const Color(0xFF29B6F6),
+                            );
+                          }
                         ),
                       ),
                     ),
@@ -202,12 +220,12 @@ class CarePage extends StatelessWidget {
   }
 
   Widget _row(Widget a, Widget b) => Row(
-    children: [
-      Expanded(child: a),
-      const SizedBox(width: 12),
-      Expanded(child: b),
-    ],
-  );
+        children: [
+          Expanded(child: a),
+          const SizedBox(width: 12),
+          Expanded(child: b),
+        ],
+      );
 }
 
 class _LargeMetricCard extends StatelessWidget {
@@ -259,9 +277,7 @@ class _LargeMetricCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.w300,
-                    color: Colors.black.withValues(
-                      alpha: 0.5,
-                    ), // Cập nhật chuẩn SDK mới
+                    color: Colors.black.withValues(alpha: 0.5),
                   ),
                 ),
                 if (unit.isNotEmpty)
@@ -341,9 +357,7 @@ class _SmallMetricCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(
-              alpha: 0.04,
-            ), // Cập nhật chuẩn SDK mới
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

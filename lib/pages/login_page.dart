@@ -15,14 +15,17 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _loginGoogle() async {
     setState(() => _loading = true);
 
+    // BẮT SỐNG NAVIGATOR TRƯỚC KHI AWAIT
+    final navigator = Navigator.of(context);
+
     final user = await AuthService().signInWithGoogle();
 
-    if (mounted) {
-      setState(() => _loading = false);
-    }
+    if (!mounted) return;
+    setState(() => _loading = false);
 
-    if (user != null && mounted) {
-      Navigator.pop(context);
+    if (user != null) {
+      // DÙNG BIẾN ĐÃ LƯU ĐỂ ĐÓNG TRANG
+      navigator.pop();
     }
   }
 
@@ -41,9 +44,7 @@ class _LoginPageState extends State<LoginPage> {
                 size: 80,
                 color: kGreen,
               ),
-
               const SizedBox(height: 20),
-
               const Text(
                 "HealthSync",
                 style: TextStyle(
@@ -51,16 +52,12 @@ class _LoginPageState extends State<LoginPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
               const SizedBox(height: 10),
-
               const Text(
                 "Đăng nhập để đồng bộ dữ liệu sức khỏe",
                 textAlign: TextAlign.center,
               ),
-
               const SizedBox(height: 40),
-
               SizedBox(
                 width: double.infinity,
                 height: 55,

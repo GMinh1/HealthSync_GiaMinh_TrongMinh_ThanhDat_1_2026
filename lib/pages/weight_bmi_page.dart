@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import '../core/app_theme.dart';
+import '../services/db_service.dart'; // Import Database Service
 
 // ─── Data Model ────────────────────────────────────────────────────────
 class BmiRecord {
+  final DocumentReference? ref; // Thêm ref để xử lý thao tác Xoá
   final double weight; // kg
   final double height; // cm
   final DateTime time;
 
   BmiRecord({
+    this.ref,
     required this.weight,
     required this.height,
     required this.time,
@@ -42,16 +46,24 @@ class WeightBmiPage extends StatefulWidget {
 }
 
 class _WeightBmiPageState extends State<WeightBmiPage> {
-  // Dữ liệu mẫu ban đầu
-  final List<BmiRecord> _records = [
-    BmiRecord(weight: 65.5, height: 170.0, time: DateTime.now()),
-  ];
+  
+  // Hàm chuyển đổi từ Firebase Document sang đối tượng BmiRecord
+  BmiRecord _fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    final timestamp = data['timestamp'] as Timestamp?;
+    return BmiRecord(
+      ref: doc.reference,
+      weight: (data['weight'] ?? 0).toDouble(),
+      height: (data['height'] ?? 0).toDouble(),
+      time: timestamp?.toDate() ?? DateTime.now(),
+    );
+  }
 
   // ─── Bottom Sheet Nhập liệu ──────────────────────────────────────────
-  void _showAddRecordSheet() {
+  void _showAddRecordSheet(double lastWeight, double lastHeight) {
     // Lấy số đo gần nhất làm mặc định để người dùng đỡ phải nhập lại nhiều
-    double inputWeight = _records.isNotEmpty ? _records.first.weight : 60.0;
-    double inputHeight = _records.isNotEmpty ? _records.first.height : 170.0;
+    double inputWeight = lastWeight > 0 ? lastWeight : 60.0;
+    double inputHeight = lastHeight > 0 ? lastHeight : 170.0;
 
     showModalBottomSheet(
       context: context,
@@ -122,9 +134,13 @@ class _WeightBmiPageState extends State<WeightBmiPage> {
               ElevatedButton(
                 onPressed: () {
                   if (inputWeight > 0 && inputHeight > 0) {
-                    setState(() {
-                      _records.insert(0, BmiRecord(weight: inputWeight, height: inputHeight, time: DateTime.now()));
-                    });
+                    DatabaseService().saveHealthRecord(
+                      'weight_bmi',
+                      {
+                        'weight': inputWeight,
+                        'height': inputHeight,
+                      },
+                    );
                   }
                   Navigator.pop(ctx);
                 },
@@ -149,8 +165,6 @@ class _WeightBmiPageState extends State<WeightBmiPage> {
   // ─── Xây dựng giao diện ──────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final latest = _records.isNotEmpty ? _records.first : null;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF2F6F9),
       appBar: AppBar(
@@ -163,195 +177,212 @@ class _WeightBmiPageState extends State<WeightBmiPage> {
         title: const Text('Cân nặng & BMI', style: TextStyle(color: kText, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                // ─── Cân nặng & Chiều cao ───
-                Row(
+      // BỌC NỘI DUNG VỚI STREAMBUILDER
+      body: StreamBuilder<QuerySnapshot>(
+        stream: DatabaseService().getRecordsStream('weight_bmi'),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: Color(0xFF7C6FEF)));
+          }
+
+          final docs = snapshot.hasData ? snapshot.data!.docs : [];
+          final records = docs.map((doc) => _fromFirestore(doc)).toList();
+          final latest = records.isNotEmpty ? records.first : null;
+
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
                   children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Cân nặng', style: TextStyle(color: kSubText, fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              children: [
-                                Text(
-                                  latest != null ? latest.weight.toString() : '--',
-                                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: kText),
-                                ),
-                                const SizedBox(width: 4),
-                                Text('kg', style: TextStyle(fontSize: 14, color: kText.withValues(alpha: 0.5))),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Chiều cao', style: TextStyle(color: kSubText, fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              children: [
-                                Text(
-                                  latest != null ? latest.height.toString() : '--',
-                                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: kText),
-                                ),
-                                const SizedBox(width: 4),
-                                Text('cm', style: TextStyle(fontSize: 14, color: kText.withValues(alpha: 0.5))),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // ─── Thẻ BMI Tổng hợp ───
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF0EEFF),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Chỉ số BMI của bạn',
-                        style: TextStyle(color: Color(0xFF7C6FEF), fontSize: 15, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        latest != null ? latest.bmi.toStringAsFixed(1) : '--',
-                        style: const TextStyle(fontSize: 56, fontWeight: FontWeight.bold, color: Color(0xFF7C6FEF)),
-                      ),
-                      const SizedBox(height: 12),
-                      if (latest != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: latest.statusColor.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            latest.status,
-                            style: TextStyle(
-                              color: latest.statusColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // ─── Nút Cập nhật ───
-                ElevatedButton.icon(
-                  onPressed: _showAddRecordSheet,
-                  icon: const Icon(Icons.add, color: Colors.white),
-                  label: const Text('Cập nhật chỉ số', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF7C6FEF),
-                    minimumSize: const Size(double.infinity, 54),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    elevation: 0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // ─── Lịch sử ───
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Align(
-              alignment: Alignment.centerLeft, 
-              child: Text('Lịch sử', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kText))
-            ),
-          ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: _records.isEmpty 
-              ? const Center(child: Text('Chưa có dữ liệu', style: TextStyle(color: kSubText)))
-              : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
-                  itemCount: _records.length,
-                  itemBuilder: (ctx, i) {
-                    final r = _records[i];
-                    return Dismissible(
-                      key: Key(r.time.millisecondsSinceEpoch.toString()),
-                      direction: DismissDirection.endToStart,
-                      onDismissed: (_) => setState(() => _records.removeAt(i)),
-                      background: Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(color: Colors.red[100], borderRadius: BorderRadius.circular(16)),
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 20),
-                        child: const Icon(Icons.delete, color: Colors.red),
-                      ),
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
+                    // ─── Cân nặng & Chiều cao ───
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('${r.time.day}/${r.time.month}/${r.time.year}', style: const TextStyle(color: kSubText, fontSize: 13)),
-                                const SizedBox(height: 4),
+                                const Text('Cân nặng', style: TextStyle(color: kSubText, fontSize: 14)),
+                                const SizedBox(height: 8),
                                 Row(
+                                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                                  textBaseline: TextBaseline.alphabetic,
                                   children: [
-                                    Text('${r.weight} kg', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kText)),
-                                    const Text(' • ', style: TextStyle(color: kSubText)),
-                                    Text('${r.height} cm', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kText)),
+                                    Text(
+                                      latest != null ? latest.weight.toString() : '--',
+                                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: kText),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text('kg', style: TextStyle(fontSize: 14, color: kText.withValues(alpha: 0.5))),
                                   ],
                                 ),
                               ],
                             ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Chiều cao', style: TextStyle(color: kSubText, fontSize: 14)),
+                                const SizedBox(height: 8),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                                  textBaseline: TextBaseline.alphabetic,
+                                  children: [
+                                    Text(
+                                      latest != null ? latest.height.toString() : '--',
+                                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: kText),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text('cm', style: TextStyle(fontSize: 14, color: kText.withValues(alpha: 0.5))),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ─── Thẻ BMI Tổng hợp ───
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0EEFF),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Chỉ số BMI của bạn',
+                            style: TextStyle(color: Color(0xFF7C6FEF), fontSize: 15, fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            latest != null ? latest.bmi.toStringAsFixed(1) : '--',
+                            style: const TextStyle(fontSize: 56, fontWeight: FontWeight.bold, color: Color(0xFF7C6FEF)),
+                          ),
+                          const SizedBox(height: 12),
+                          if (latest != null)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               decoration: BoxDecoration(
-                                color: r.statusColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
+                                color: latest.statusColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                'BMI: ${r.bmi.toStringAsFixed(1)}',
-                                style: TextStyle(color: r.statusColor, fontWeight: FontWeight.bold, fontSize: 13),
+                                latest.status,
+                                style: TextStyle(
+                                  color: latest.statusColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
                               ),
-                            )
-                          ],
-                        ),
+                            ),
+                        ],
                       ),
-                    );
-                  },
+                    ),
+                    const SizedBox(height: 24),
+
+                    // ─── Nút Cập nhật ───
+                    ElevatedButton.icon(
+                      onPressed: () => _showAddRecordSheet(latest?.weight ?? 0, latest?.height ?? 0),
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      label: const Text('Cập nhật chỉ số', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF7C6FEF),
+                        minimumSize: const Size(double.infinity, 54),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 0,
+                      ),
+                    ),
+                  ],
                 ),
-          ),
-        ],
+              ),
+              
+              // ─── Lịch sử ───
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Align(
+                  alignment: Alignment.centerLeft, 
+                  child: Text('Lịch sử', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kText))
+                ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: records.isEmpty 
+                  ? const Center(child: Text('Chưa có dữ liệu', style: TextStyle(color: kSubText)))
+                  : ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
+                      itemCount: records.length,
+                      itemBuilder: (ctx, i) {
+                        final r = records[i];
+                        return Dismissible(
+                          key: Key(r.ref?.id ?? r.time.millisecondsSinceEpoch.toString()),
+                          direction: DismissDirection.endToStart,
+                          onDismissed: (_) {
+                            // XOÁ TRÊN FIREBASE
+                            r.ref?.delete();
+                          },
+                          background: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(color: Colors.red[100], borderRadius: BorderRadius.circular(16)),
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: 20),
+                            child: const Icon(Icons.delete, color: Colors.red),
+                          ),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('${r.time.day}/${r.time.month}/${r.time.year}', style: const TextStyle(color: kSubText, fontSize: 13)),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Text('${r.weight} kg', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kText)),
+                                        const Text(' • ', style: TextStyle(color: kSubText)),
+                                        Text('${r.height} cm', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kText)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: r.statusColor.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    'BMI: ${r.bmi.toStringAsFixed(1)}',
+                                    style: TextStyle(color: r.statusColor, fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+              ),
+            ],
+          );
+        }
       ),
     );
   }

@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "462532276726",
+    "firebase_url": "https://healthsync-4775b-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "healthsync-4775b",
     "storage_bucket": "healthsync-4775b.firebasestorage.app"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.example.flutter_project_test"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "462532276726-3tam3sn2su3t8affhmgb0po4kli7q75s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.flutter_project_test",
+            "certificate_hash": "2aa585a071671ce5142fb9071cd2520ddb2af905"
+          }
+        },
+        {
+          "client_id": "462532276726-kpadh0d2tnrstlflqknd2gjc40g6rovl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBCgTPCEQ6a_lnH8-iYiEWcmos2YCJyUWc"
@@ -20,7 +34,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "462532276726-kpadh0d2tnrstlflqknd2gjc40g6rovl.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "462532276726-e30sh0kp3e6m80llbf1v62pcpuf261l7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flutterProjectTest"
+              }
+            }
+          ]
         }
       }
     }

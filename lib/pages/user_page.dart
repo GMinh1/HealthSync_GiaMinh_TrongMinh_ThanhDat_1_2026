@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
+import '../services/db_service.dart';
 import 'login_page.dart';
 import 'package:flutter/material.dart';
 import '../core/app_theme.dart';
@@ -19,17 +20,43 @@ class UserPage extends StatefulWidget {
 class _UserPageState extends State<UserPage> {
   _UserProfile? _profile;
 
+  bool _waterReminder = true;
+  bool _workoutReminder = false;
+  bool _healthReminder = true;
+
   @override
   void initState() {
     super.initState();
+    _loadUserProfile(); 
+  }
 
+  Future<void> _loadUserProfile() async {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-      _profile = _UserProfile(
-        name: user.displayName ?? 'Người dùng',
-        email: user.email ?? '',
-      );
+      if (mounted) {
+        setState(() {
+          _profile = _UserProfile(
+            name: user.displayName ?? 'Người dùng',
+            email: user.email ?? '',
+          );
+        });
+      }
+
+      final doc = await DatabaseService().getUserProfile();
+      if (doc != null && doc.exists && mounted) {
+        final data = doc.data() as Map<String, dynamic>;
+        setState(() {
+          _profile = _UserProfile(
+            name: data['name'] ?? user.displayName ?? 'Người dùng',
+            email: data['email'] ?? user.email ?? '',
+          );
+          
+          _waterReminder = data['water_reminder'] ?? true;
+          _workoutReminder = data['workout_reminder'] ?? false;
+          _healthReminder = data['health_reminder'] ?? true;
+        });
+      }
     }
   }
 
@@ -38,19 +65,7 @@ class _UserPageState extends State<UserPage> {
       context,
       MaterialPageRoute(builder: (_) => const LoginPage()),
     );
-
-    final user = FirebaseAuth.instance.currentUser;
-
-    print("CURRENT USER = ${user?.email}");
-
-    if (user != null) {
-      setState(() {
-        _profile = _UserProfile(
-          name: user.displayName ?? 'Người dùng',
-          email: user.email ?? '',
-        );
-      });
-    }
+    _loadUserProfile();
   }
 
   void _logout() {
@@ -70,13 +85,17 @@ class _UserPageState extends State<UserPage> {
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(ctx);
-
+              // Bắt Navigator của hộp thoại TRƯỚC KHI await
+              final navigator = Navigator.of(ctx);
+              navigator.pop();
+              
               await AuthService().signOut();
-
-              setState(() {
-                _profile = null;
-              });
+              
+              if (mounted) {
+                setState(() {
+                  _profile = null;
+                });
+              }
             },
             child: const Text(
               'Đăng xuất',
@@ -87,6 +106,137 @@ class _UserPageState extends State<UserPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Row(
+          children: [
+            Icon(Icons.monitor_heart, color: kGreen, size: 28),
+            SizedBox(width: 10),
+            Text('HealthSync', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'Phiên bản 1.0.0\n\nHealthSync là ứng dụng theo dõi sức khỏe và thể chất toàn diện, giúp bạn quản lý chỉ số cơ thể, dinh dưỡng và tập luyện mỗi ngày.\n\nPhát triển bởi:\n- Gia Minh\n- Trọng Minh\n- Thành Đạt',
+          style: TextStyle(height: 1.5, fontSize: 14, color: kText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Đóng', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 16)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRemindersSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (BuildContext ctx, StateSetter setSheetState) => Container(
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Cài đặt nhắc nhở', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kText)),
+              const SizedBox(height: 16),
+              SwitchListTile(
+                secondary: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), shape: BoxShape.circle),
+                  child: const Icon(Icons.water_drop, color: Colors.blue),
+                ),
+                title: const Text('Nhắc uống nước', style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: const Text('Mỗi 2 tiếng'),
+                value: _waterReminder,
+                activeColor: Colors.blue,
+                onChanged: (val) {
+                  setSheetState(() => _waterReminder = val);
+                  setState(() => _waterReminder = val);
+                },
+              ),
+              SwitchListTile(
+                secondary: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), shape: BoxShape.circle),
+                  child: const Icon(Icons.fitness_center, color: Colors.orange),
+                ),
+                title: const Text('Nhắc tập thể dục', style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: const Text('17:00 hàng ngày'),
+                value: _workoutReminder,
+                activeColor: Colors.orange,
+                onChanged: (val) {
+                  setSheetState(() => _workoutReminder = val);
+                  setState(() => _workoutReminder = val);
+                },
+              ),
+              SwitchListTile(
+                secondary: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), shape: BoxShape.circle),
+                  child: const Icon(Icons.monitor_heart, color: Colors.red),
+                ),
+                title: const Text('Nhắc đo huyết áp', style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: const Text('08:00 sáng hàng ngày'),
+                value: _healthReminder,
+                activeColor: Colors.red,
+                onChanged: (val) {
+                  setSheetState(() => _healthReminder = val);
+                  setState(() => _healthReminder = val);
+                },
+              ),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      // BẮT SỐNG NAVIGATOR & MESSENGER TRƯỚC KHI AWAIT
+                      final messenger = ScaffoldMessenger.of(context);
+                      final navigator = Navigator.of(sheetContext);
+                      
+                      navigator.pop();
+                      
+                      await DatabaseService().saveUserProfile({
+                        'water_reminder': _waterReminder,
+                        'workout_reminder': _workoutReminder,
+                        'health_reminder': _healthReminder,
+                      });
+                      
+                      if (mounted) {
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Đã lưu cài đặt nhắc nhở!'),
+                            backgroundColor: kGreen,
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: kGreen,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text('Lưu cài đặt', style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -102,34 +252,41 @@ class _UserPageState extends State<UserPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Profile / Login card ──────────────────────────────────
               _profile == null
                   ? _GuestCard(onLogin: _openLogin)
                   : _ProfileCard(profile: _profile!, onLogout: _logout),
 
               const SizedBox(height: 28),
 
-              // ── General ──────────────────────────────────────────────
               const _SectionHeader('Thông báo'),
               const SizedBox(height: 10),
-              const _SettingsCard(
+              _SettingsCard(
                 items: [
-                  _SettingItem(icon: Icons.alarm_outlined, label: 'Nhắc nhở'),
+                  _SettingItem(
+                    icon: Icons.alarm_outlined, 
+                    label: 'Cài đặt nhắc nhở',
+                    onTap: () => _showRemindersSheet(context),
+                  ),
                 ],
               ),
 
               const SizedBox(height: 22),
 
-              // ── Service & Policy ─────────────────────────────────────
               const _SectionHeader('Về dịch vụ của chúng tôi'),
               const SizedBox(height: 10),
-              const _SettingsCard(
-                items: [_SettingItem(icon: Icons.info_outline, label: 'About')],
+              _SettingsCard(
+                items: [
+                  _SettingItem(
+                    icon: Icons.info_outline, 
+                    label: 'Về HealthSync',
+                    versionTag: 'v1.0.0', 
+                    onTap: () => _showAboutDialog(context),
+                  )
+                ],
               ),
 
               const SizedBox(height: 22),
 
-              // ── Collection ───────────────────────────────────────────
               const _SectionHeader('Bộ sưu tập'),
               const SizedBox(height: 10),
               _SettingsCard(
@@ -181,7 +338,7 @@ class _GuestCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -189,7 +346,6 @@ class _GuestCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Avatar placeholder
           Container(
             width: 80,
             height: 80,
@@ -232,7 +388,7 @@ class _GuestCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: kGreen.withOpacity(0.35),
+                    color: kGreen.withValues(alpha: 0.35),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -282,7 +438,7 @@ class _ProfileCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: kGreen.withOpacity(0.35),
+            color: kGreen.withValues(alpha: 0.35),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -294,15 +450,14 @@ class _ProfileCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
             child: Row(
               children: [
-                // Avatar
                 Container(
                   width: 70,
                   height: 70,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
+                    color: Colors.white.withValues(alpha: 0.25),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       width: 2,
                     ),
                   ),
@@ -320,7 +475,6 @@ class _ProfileCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                // Info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -338,7 +492,7 @@ class _ProfileCard extends StatelessWidget {
                         profile.email,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.white.withOpacity(0.85),
+                          color: Colors.white.withValues(alpha: 0.85),
                         ),
                       ),
                     ],
@@ -347,9 +501,7 @@ class _ProfileCard extends StatelessWidget {
               ],
             ),
           ),
-          // Divider
-          Container(height: 1, color: Colors.white.withOpacity(0.2)),
-          // Actions row
+          Container(height: 1, color: Colors.white.withValues(alpha: 0.2)),
           Row(
             children: [
               Expanded(
@@ -362,7 +514,7 @@ class _ProfileCard extends StatelessWidget {
               Container(
                 width: 1,
                 height: 44,
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
               ),
               Expanded(
                 child: _ProfileAction(
@@ -415,17 +567,11 @@ class _ProfileAction extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-//  User profile model
-// ═══════════════════════════════════════════════════════════════════════
 class _UserProfile {
   final String name, email;
   const _UserProfile({required this.name, required this.email});
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-//  Shared small widgets (Settings)
-// ═══════════════════════════════════════════════════════════════════════
 class _SectionHeader extends StatelessWidget {
   final String title;
   const _SectionHeader(this.title);
@@ -480,7 +626,7 @@ class _SettingsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
